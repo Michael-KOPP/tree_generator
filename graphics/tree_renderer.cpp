@@ -62,6 +62,6 @@ void tree_renderer::draw(shader const& shader, glm::mat4 const& view)
 
     glBindVertexArray(this->m_vao);
     glLineWidth(2.0f);
-    glDrawElements(GL_LINES, this->m_mesh.points().size(), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, this->m_mesh.points().size(), GL_UNSIGNED_INT, nullptr);
 
 }

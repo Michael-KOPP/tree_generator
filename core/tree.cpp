@@ -66,28 +66,28 @@ void branch::create_branches(int branch_count)
         float p = dis(gen);
         glm::vec3 new_position = this->m_position + p*this->m_length * this->m_orientation;
 
-        // Calculer l'angle theta selon laquelle m_orientation est incliné par rapport à l'axe y
         float theta = atan2(m_orientation.x, m_orientation.z);
 
-        // Utiliser trigonométrie pour calculer horizontal_branch_axis
         glm::vec3 horizontal_branch_axis = glm::vec3(-sin(theta), 0.0f, cos(theta));
 
-        // Calculer vertical_branch_axis normalement
         glm::vec3 vertical_branch_axis = glm::cross(m_orientation, horizontal_branch_axis);
 
-        // Normaliser les vecteurs résultants
         horizontal_branch_axis = glm::normalize(horizontal_branch_axis);
         vertical_branch_axis = glm::normalize(vertical_branch_axis);
 
-        float h = cos(2.0 * i * M_PI / branch_count);
-        float v = sin(2.0 * i * M_PI / branch_count);
-        float b = sqrt(4.0 * sin(M_PI / branch_count) * sin(M_PI / branch_count) - 1);
+        float R = 1.0;
+        float alpha = sin(M_PI / branch_count);
+
+        if(alpha >= 0.5)
+            R = 0.5/sin(alpha);
+
+        float h = R*cos(2.0 * i * alpha);
+        float v = R*sin(2.0 * i * alpha);
+        float b = sqrt(1.0-R*R);
 
         glm::vec3 new_orientation = h * horizontal_branch_axis +
                                     v * vertical_branch_axis * v +
                                     b * this->m_orientation;
-
-        new_orientation /= 2 * sin(M_PI / branch_count);
 
         auto const& vec_display = m_orientation;
 
@@ -131,175 +131,5 @@ void tree::foreach_branch(std::function<void(branch const&)> const& func) const
 
 void tree::grow()
 {
-    this->m_branch.grow_branches(6);
+    this->m_branch.grow_branches(4);
 }
-
-// tree::tree(glm::vec3 position, glm::vec3 orientation, glm::vec3 stem_length, glm::vec3 stem_section):
-//     m_trunc(position,
-//              orientation,
-//              stem_length, stem_section)
-// {
-
-// }
-
-// void tree::grow()
-// {
-//     this->m_trunc.grow();
-// }
-
-
-// tree::node const& tree::get_trunc_node() const
-// {
-//     return this->m_trunc;
-// }
-
-// tree::node::branch const& tree::get_trunc() const
-// {
-//     return *this->m_trunc.m_branch;
-// }
-
-// tree::node::node(glm::vec3 position, glm::vec3 orientation, real length, real section):
-//     m_position(position),
-//     m_orientation(orientation),
-//     m_branch(std::make_unique<tree::node::branch>(*this, length, section))
-// {
-
-// }
-
-// tree::node::node(tree::node::branch const * parent):
-//     m_parent(parent)
-// {
-
-// }
-
-// void tree::node::grow()
-// {
-//     if(this->m_branch)
-//     {
-//         this->m_branch->grow();
-//     }
-//     else if(this->should_grow_branch())
-//     {
-//         this->m_branch = std::make_unique<tree::node::branch>(*this);
-//     }
-// }
-
-// bool tree::node::should_grow_branch() const
-// {
-//     return true;
-// }
-
-// bool tree::node::is_on_a_branch() const
-// {
-//     return this->m_parent != nullptr;
-// }
-
-// tree::node::branch::branch(node const& owning_node, real length, real section):
-//     m_owning_node(owning_node),
-//     m_length(length),
-//     m_section(section)
-// {
-//     for(int i = 0; i < 3; ++i)
-//     {
-//         this->m_nodes.push_back(node(this));
-//     }
-// }
-
-// tree::node::branch::branch(node const& owning_node):
-//     m_owning_node(owning_node)
-// {
-//     if(!m_owning_node.is_on_a_branch())
-//         return;
-
-//     branch const& parent_branch = m_owning_node.owning_branch();
-
-//     this->m_length = 0.25 * parent_branch.m_length;
-//     this->m_section = 0.25 * parent_branch.m_section;
-//     for(int i = 0; i < 3; ++i)
-//     {
-//         this->m_nodes.push_back(node(this));
-//     }
-// }
-
-// void tree::node::branch::grow()
-// {
-//     this->m_length *= 1.1;
-//     this->m_section *= 1.1*1.1;
-
-//     for(tree::node& node : this->m_nodes)
-//     {
-//         node.grow();
-//     }
-// }
-
-// tree::iterator tree::node::branch::begin()
-// {
-//     return this->m_nodes.begin();
-// }
-
-// tree::iterator tree::node::branch::end()
-// {
-//     return this->m_nodes.end();
-// }
-
-// tree::const_iterator tree::node::branch::begin() const
-// {
-//     return this->m_nodes.begin();
-// }
-
-// tree::const_iterator tree::node::branch::end() const
-// {
-//     return this->m_nodes.end();
-// }
-
-// tree::const_iterator tree::node::branch::cbegin() const
-// {
-//     return this->m_nodes.cbegin();
-// }
-
-// tree::const_iterator tree::node::branch::cend() const
-// {
-//     return this->m_nodes.cend();
-// }
-
-// tree::node::branch const& tree::node::owning_branch() const
-// {
-//     return *this->m_parent;
-// }
-
-// std::ostream& operator<<(std::ostream& os, tree const& tree)
-// {
-//     tree.m_trunc.print(os, 0);
-//     return os;
-// }
-
-// std::ostream& indent(std::ostream& os, int level)
-// {
-//     for(int i = 0; i < level; ++i)
-//     {
-//         os << "\t";
-//     }
-//     return os;
-// }
-
-// void tree::node::print(std::ostream& os, int level) const
-// {
-
-//     indent(os,level) << "has branch : " << (bool)this->m_branch << "\n";
-//     indent(os,level) << "has leaf : " << (bool)this->m_leaf << "\n";
-//     if(this->m_branch) {
-//         indent(os,level) << "branch : " << "\n";
-//         this->m_branch->print(os, level + 1);
-//     }
-// }
-
-// void tree::node::branch::print(std::ostream& os, int level) const
-// {
-//     indent(os,level) << "length : " << this->m_length << "\n";
-//     indent(os,level) << "section : " << this->m_section << "\n";
-//     for(tree::node const& node : this->m_nodes)
-//     {
-//         indent(os,level) << "nodes :  " << "\n";
-//         node.print(os, level + 1);
-//     }
-// }
